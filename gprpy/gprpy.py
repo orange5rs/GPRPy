@@ -2,11 +2,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+
 import gprpy.toolbox.gprIO_DT1 as gprIO_DT1
 import gprpy.toolbox.gprIO_DZT as gprIO_DZT
 import gprpy.toolbox.gprIO_BSQ as gprIO_BSQ
 import gprpy.toolbox.gprIO_MALA as gprIO_MALA
 import gprpy.toolbox.gprpyTools as tools
+
 try:
     import gprpy.irlib.external.mig_fk as mig_fk
 except:
@@ -31,15 +33,15 @@ class gprpyProfile:
                      .gpr (GPRPy), .DT1 (SnS), .DZT (GSSI), .rd3 (MALA),
                      and ENVI standard BSQ.
         '''
-        
+
         self.history = ["mygpr = gp.gprpyProfile()"]
 
         # Initialize previous for undo
         self.previous = {}
-        
+
         if filename is not None:
-            self.importdata(filename)                 
-        
+            self.importdata(filename)
+
     def importdata(self,filename):
         '''
         Loads .gpr (native GPRPy), .DT1 (Sensors and Software),
@@ -147,13 +149,27 @@ class gprpyProfile:
             self.history.append(histstr)       
 
 
-        elif file_ext==".rad" or file_ext==".rd3" or file_ext==".rd7":
+        # MALA format
+        # @see ./toolbox/gprIO_MALA.py
+        elif file_ext=='.rad' or file_ext=='.rd3' or file_ext=='.rd7':
             self.data, self.info = gprIO_MALA.readMALA(file_name)
 
-            self.twtt = np.linspace(0,float(self.info["TIMEWINDOW"]),int(self.info["SAMPLES"]))
-            self.profilePos = float(self.info["DISTANCE INTERVAL"])*np.arange(0,self.data.shape[1])
+            self.n1 = int(self.info['SAMPLES'])
+            self.o1 = 0.
+            self.d1 = float(self.info['TIMEWINDOW'])/self.n1
+            self.twtt = self.o1 + self.d1*np.arange(self.n1)
 
-            self.antsep = self.info["ANTENNA SEPARATION"]
+            self.n2 = os.path.getsize(file_name + '.rd3')//(2*self.n1)
+            self.d2 = float(self.info['DISTANCE INTERVAL'])
+            self.o2 = 0.
+            if self.d2 == 0.:
+               self.d2 = 1.
+               self.o2 = 1.
+            self.profilePos = self.o2 + self.d2*np.arange(self.n2)
+            # print (self.n2)
+            # print (self.info['LAST TRACE'])
+
+            self.antsep = self.info['ANTENNA SEPARATION']
             self.velocity = None
             self.depth = None
             self.maxTopo = None
@@ -161,14 +177,12 @@ class gprpyProfile:
             self.threeD = None
             self.data_pretopo = None
             self.twtt_pretopo = None
-            # Initialize previous
             self.initPrevious()
-            
+
             # Put what you did in history
             histstr = "mygpr.importdata('%s')" %(filename)
             self.history.append(histstr)
-            
-            
+
 
         elif file_ext==".gpr":
             ## Getting back the objects:
