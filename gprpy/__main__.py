@@ -6,47 +6,46 @@ from gprpy.gprpyCWGUI import GPRPyCWApp
 
 def main(args=None):
 
-	if len(sys.argv) < 2:
-		mode = input("Profile [p] or Common Midpoint / WARR [c]?  ")
-	else:
-		mode = sys.argv[1][0]
+   if len(sys.argv) < 2:
+      mode = input("Profile [p] or Common Midpoint / WARR [c]?  ")
+   else:
+      mode = sys.argv[1][0]
 
 
+   if mode == 'p':
+      rightcol=9
+      figrowsp=19+1
 
-	if mode == 'p':
-		rightcol=9
-		figrowsp=19+1
+      root = tk.Tk()
+
+      for col in range(rightcol):
+         root.columnconfigure(col, weight=1)
+      for row in range(figrowsp):
+         root.rowconfigure(row, weight=1)
+
+      app = GPRPyApp(root)
+
+      root.mainloop()
+
+   elif mode == 'c' or mode == 'w':
+      rightcol=10
+      figrowsp=15+1
     
-		root = tk.Tk()
-    
-		for col in range(rightcol):
-			root.columnconfigure(col, weight=1)
-		for row in range(figrowsp):    
-			root.rowconfigure(row, weight=1)
-            
-		app = GPRPyApp(root)
+      root = tk.Tk()
 
-		root.mainloop()
+      for col in range(rightcol):
+         root.columnconfigure(col, weight=1)
+      for row in range(figrowsp):
+         root.rowconfigure(row, weight=1)
 
-	elif mode == 'c' or mode == 'w':
-		rightcol=10
-		figrowsp=15+1
-    
-		root = tk.Tk()
+      app = GPRPyCWApp(root)
 
-		for col in range(rightcol):
-			root.columnconfigure(col, weight=1)
-		for row in range(figrowsp):    
-			root.rowconfigure(row, weight=1)
+      root.mainloop()
 
-		app = GPRPyCWApp(root)
+   else:
+      print("You need to chose either profile [p] or CMP/WARR [c] mode.")
 
-		root.mainloop()
-
-	else:
-		print("You need to chose either profile [p] or CMP/WARR [c] mode.")
-    
-    
 
 if __name__ == "__main__":
-	main()
+   main()
+
